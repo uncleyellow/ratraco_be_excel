@@ -160,7 +160,8 @@ app.get("/download", async (req, res) => {
   if (!videoUrl) return res.status(400).json({ error: "Thiếu URL video!" });
 
   const outputPath = `/tmp/audio.mp3`;
-  const command = `yt-dlp -f "bestaudio" --extract-audio --audio-format mp3 -o "${outputPath}" "${videoUrl}"`;
+  const command = `python3 -m yt_dlp -f "bestaudio[ext=m4a]" -o "/tmp/audio.mp3" "${videoUrl}"`;
+
 
   exec(command, (error, stdout, stderr) => {
     if (error) {

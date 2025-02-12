@@ -1,10 +1,11 @@
-# Sử dụng Node.js 18 chính thức
+# Sử dụng Node.js 18
 FROM node:18
 
-# Cài đặt Python, FFmpeg, yt-dlp
+# Cài đặt Python, FFmpeg và yt-dlp
 RUN apt-get update && apt-get install -y python3 python3-pip ffmpeg \
     && pip3 install yt-dlp \
     && ln -s /usr/local/bin/yt-dlp /usr/bin/yt-dlp \
+    && chmod +x /usr/local/bin/yt-dlp \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Đặt thư mục làm việc
