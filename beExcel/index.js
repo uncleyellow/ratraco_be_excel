@@ -1,11 +1,11 @@
 const express = require("express");
 const { google } = require("googleapis");
-const cors = require("cors"); // Import thư viện cors
-// const ytdl = require("ytdl-core-discord");
+const cors = require("cors");
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 
+const app = express();
 // Sử dụng middleware cors
 app.use(cors()); // Mặc định cho phép tất cả các origin
 
@@ -154,35 +154,35 @@ app.get("/runPlan", async (req, res) => {
 
 
 
+// ✅ API tải video từ YouTube
 app.get("/download", async (req, res) => {
   const videoUrl = req.query.url;
-  if (!videoUrl) return res.status(400).send("Thiếu URL video!");
+  if (!videoUrl) return res.status(400).json({ error: "Thiếu URL video!" });
 
-  // Tạo đường dẫn file trong thư mục tạm
-  const outputPath = `/tmp/video.mp4`;
+  const outputPath = `/tmp/audio.mp3`; // Railway hỗ trợ tốt thư mục /tmp/
 
-  // Lệnh tải video bằng yt-dlp
-  const command = `yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" --merge-output-format mp4 -o "${outputPath}" "${videoUrl}"`;
+  // 🛠 Lệnh tải MP3
+  const command = `yt-dlp -f "bestaudio[ext=m4a]" --extract-audio --audio-format mp3 -o "${outputPath}" "${videoUrl}"`;
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
-      return res.status(500).send("Lỗi tải video: " + stderr);
+      console.error("❌ Lỗi tải MP3:", stderr);
+      return res.status(500).json({ error: "Lỗi tải MP3!" });
     }
 
-    // Kiểm tra file đã tồn tại chưa
     if (!fs.existsSync(outputPath)) {
-      return res.status(500).send("Lỗi: File không tồn tại sau khi tải!");
+      return res.status(500).json({ error: "Lỗi: File không tồn tại sau khi tải!" });
     }
 
-    // Gửi file về cho client
-    res.download(outputPath, "video.mp4", (err) => {
-      if (err) res.status(500).send("Lỗi gửi file: " + err.message);
+    // 🚀 Gửi file về cho client
+    res.download(outputPath, "audio.mp3", (err) => {
+      if (err) return res.status(500).json({ error: "Lỗi gửi file!" });
 
-      // Xóa file sau khi tải để tiết kiệm dung lượng
-      fs.unlinkSync(outputPath);
+      fs.unlinkSync(outputPath); // 🗑 Xóa file sau khi gửi
     });
   });
 });
+
 
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
 
