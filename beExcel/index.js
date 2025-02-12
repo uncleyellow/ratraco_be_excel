@@ -159,29 +159,25 @@ app.get("/download", async (req, res) => {
   const videoUrl = req.query.url;
   if (!videoUrl) return res.status(400).json({ error: "Thiếu URL video!" });
 
-  const outputPath = `/tmp/audio.mp3`; // Railway hỗ trợ tốt thư mục /tmp/
-
-  // 🛠 Lệnh tải MP3
-  const command = `yt-dlp -f "bestaudio[ext=m4a]" --extract-audio --audio-format mp3 -o "${outputPath}" "${videoUrl}"`;
+  const outputPath = `/tmp/audio.mp3`;
+  const command = `yt-dlp -f "bestaudio" --extract-audio --audio-format mp3 -o "${outputPath}" "${videoUrl}"`;
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
-      console.error("❌ Lỗi tải MP3:", stderr);
-      return res.status(500).json({ error: "Lỗi tải MP3!" });
+      return res.status(500).json({ error: "Lỗi tải MP3!", details: stderr });
     }
 
     if (!fs.existsSync(outputPath)) {
-      return res.status(500).json({ error: "Lỗi: File không tồn tại sau khi tải!" });
+      return res.status(500).json({ error: "File không tồn tại sau khi tải!" });
     }
 
-    // 🚀 Gửi file về cho client
     res.download(outputPath, "audio.mp3", (err) => {
-      if (err) return res.status(500).json({ error: "Lỗi gửi file!" });
-
-      fs.unlinkSync(outputPath); // 🗑 Xóa file sau khi gửi
+      if (err) return res.status(500).json({ error: "Lỗi gửi file!", details: err.message });
+      fs.unlinkSync(outputPath); // Xóa file sau khi tải
     });
   });
 });
+
 
 
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
