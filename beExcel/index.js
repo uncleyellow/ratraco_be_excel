@@ -753,8 +753,9 @@ app.get("/runPlan", async (req, res) => {
     res.status(500).send("Error fetching KH_Chay_Tau_25 data: " + error.message);
   }
 });
+const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
 
 // Khởi động server
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
 });
