@@ -1,8 +1,10 @@
 const express = require("express");
 const { google } = require("googleapis");
 const cors = require("cors"); // Import thư viện cors
-const ytdl = require("ytdl-core");
-const app = express();
+// const ytdl = require("ytdl-core-discord");
+const { exec } = require("child_process");
+const path = require("path");
+const fs = require("fs");
 
 // Sử dụng middleware cors
 app.use(cors()); // Mặc định cho phép tất cả các origin
@@ -154,17 +156,32 @@ app.get("/runPlan", async (req, res) => {
 
 app.get("/download", async (req, res) => {
   const videoUrl = req.query.url;
-  if (!videoUrl) return res.status(400).send("Missing URL");
+  if (!videoUrl) return res.status(400).send("Thiếu URL video!");
 
-  try {
-    const info = await ytdl.getInfo(videoUrl);
-    const format = ytdl.chooseFormat(info.formats, { quality: "highestaudio" });
+  // Tạo đường dẫn file trong thư mục tạm
+  const outputPath = `/tmp/video.mp4`;
 
-    res.header("Content-Disposition", `attachment; filename="audio.mp3"`);
-    ytdl(videoUrl, { format }).pipe(res);
-  } catch (error) {
-    res.status(500).send("Error downloading audio: " + error.message);
-  }
+  // Lệnh tải video bằng yt-dlp
+  const command = `yt-dlp -f "bestvideo[ext=mp4]+bestaudio[ext=m4a]" --merge-output-format mp4 -o "${outputPath}" "${videoUrl}"`;
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).send("Lỗi tải video: " + stderr);
+    }
+
+    // Kiểm tra file đã tồn tại chưa
+    if (!fs.existsSync(outputPath)) {
+      return res.status(500).send("Lỗi: File không tồn tại sau khi tải!");
+    }
+
+    // Gửi file về cho client
+    res.download(outputPath, "video.mp4", (err) => {
+      if (err) res.status(500).send("Lỗi gửi file: " + err.message);
+
+      // Xóa file sau khi tải để tiết kiệm dung lượng
+      fs.unlinkSync(outputPath);
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
