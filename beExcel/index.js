@@ -11,6 +11,7 @@ app.use(cors()); // Mặc định cho phép tất cả các origin
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
 const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
+console.log(serviceAccount)
 const auth = new google.auth.GoogleAuth({
   credentials: {
     client_email: serviceAccount.client_email,
