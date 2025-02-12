@@ -1,29 +1,29 @@
 const express = require("express");
 const { google } = require("googleapis");
 const cors = require("cors"); // Import thư viện cors
-
+const ytdl = require("ytdl-core");
 const app = express();
 
 // Sử dụng middleware cors
 app.use(cors()); // Mặc định cho phép tất cả các origin
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
-console.log(serviceAccount)
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: serviceAccount.client_email,
-    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
-  },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
+// const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
+// console.log(serviceAccount)
+// const auth = new google.auth.GoogleAuth({
+//   credentials: {
+//     client_email: serviceAccount.client_email,
+//     private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
+//   },
+//   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+// });
 
 
 // Thiết lập cấu hình Google Auth
-// const auth = new google.auth.GoogleAuth({
-//   keyFile: "credentials.json", // Đường dẫn tới credentials.json
-//   scopes: "https://www.googleapis.com/auth/spreadsheets",
-// });
+const auth = new google.auth.GoogleAuth({
+  keyFile: "credentials.json", // Đường dẫn tới credentials.json
+  scopes: "https://www.googleapis.com/auth/spreadsheets",
+});
 
 // ID của Google Sheet
 const spreadsheetId = "1itgkdhtP-De1GQqFT3I4uG3mSXamHs_5M4F9yqpmHjc";
@@ -149,6 +149,24 @@ app.get("/runPlan", async (req, res) => {
     res.status(500).send("Error fetching KH_Chay_Tau_25 data: " + error.message);
   }
 });
+
+
+
+app.get("/download", async (req, res) => {
+  const videoUrl = req.query.url;
+  if (!videoUrl) return res.status(400).send("Missing URL");
+
+  try {
+    const info = await ytdl.getInfo(videoUrl);
+    const format = ytdl.chooseFormat(info.formats, { quality: "highestaudio" });
+
+    res.header("Content-Disposition", `attachment; filename="audio.mp3"`);
+    ytdl(videoUrl, { format }).pipe(res);
+  } catch (error) {
+    res.status(500).send("Error downloading audio: " + error.message);
+  }
+});
+
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
 
 // Khởi động server
