@@ -1,8 +1,9 @@
- 
 FROM node:18
 
-# Cài đặt FFmpeg và yt-dlp
-RUN apt-get update && apt-get install -y ffmpeg wget && \
+# Cài đặt Python, FFmpeg và yt-dlp
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip ffmpeg wget && \
+    ln -s /usr/bin/python3 /usr/bin/python && \
     wget https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -O /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp
 
