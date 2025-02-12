@@ -2,12 +2,10 @@ const express = require("express");
 const { google } = require("googleapis");
 const cors = require("cors"); // Import thư viện cors
 
-
 const app = express();
 
 // Sử dụng middleware cors
 app.use(cors()); // Mặc định cho phép tất cả các origin
-
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
 const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
@@ -44,664 +42,54 @@ const getSheetData = async (range) => {
   return response.data.values; // Trả về dữ liệu
 };
 
-// Route cho sheet đầu tiên
-app.get("/sheet1", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A3:L8"); // Thay đổi range tùy ý
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching sheet1 data: " + error.message);
-  }
-});
+const routes = [
+  { path: "/sheetb0", range: "charts!A2:D3" },
+  { path: "/sheetb1", range: "charts!A4:D5" },
+  { path: "/sheetb2", range: "charts!A8:D9" },
+  { path: "/sheetb3", range: "charts!A12:D13" },
+  { path: "/sheetb4", range: "charts!A14:D15" },
+  { path: "/sheetb5", range: "charts!A16:D17" },
+  { path: "/sheetb6", range: "charts!A18:D19" },
+  { path: "/sheetb7", range: "charts!A22:D23" },
+  { path: "/sheetb8", range: "charts!A34:D35" },
+  { path: "/sheetb9", range: "charts!A38:D40" },
+  { path: "/sheetb10", range: "charts!A41:D43" },
+  { path: "/sheetb11", range: "charts!A44:D49" },
+  { path: "/sheetb12", range: "charts!A52:D53" },
+  { path: "/sheetb13", range: "charts!A54:D55" },
+  { path: "/sheetb14", range: "charts!A58:D59" },
+  { path: "/sheetb15", range: "charts!A60:D61" },
+  { path: "/sheetb16", range: "charts!A64:D65" },
+  { path: "/sheetb17", range: "charts!A66:D67" },
+  { path: "/sheetb18", range: "charts!A70:D71" },
+  { path: "/sheetb19", range: "charts!A72:D73" },
+  { path: "/sheetb20", range: "charts!A76:D77" },
+  { path: "/sheetb21", range: "charts!A78:D79" },
+  { path: "/sheetb22", range: "charts!A82:D83" },
+  { path: "/sheetb23", range: "charts!A84:D85" },
+  { path: "/sheetb24", range: "charts!A88:D90" },
+  { path: "/sheetb25", range: "charts!A93:D95" },
+  { path: "/sheetb26", range: "charts!A98:D100" },
+  { path: "/sheetb27", range: "charts!A26:B31" },
+  { path: "/sheetb28", range: "charts!C26:D31" },
+  { path: "/sheetb29", range: "charts!E26:F31" },
+  // { path: "/tests", range: "charts!A26:F29" },
+  // { path: "/full", range: "Tong_hop!A6:H53" },
+  // { path: "/runPlan", range: "KH_Chay_Tau_25!A4:N33" },
+  { path: "/sheetcmt0", range: "charts!F3" },
+];
 
-// Route cho sheet thứ hai
-app.get("/sheet2", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A31:L36"); // Thay đổi range tùy ý
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching sheet2 data: " + error.message);
-  }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet3", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A56:B60");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet4", async (req, res) => {
+routes.forEach(({ path, range }) => {
+  app.get(path, async (req, res) => {
     try {
-      const data = await getSheetData("charts!B70:C74");
+      const data = await getSheetData(range);
       res.status(200).json({ data });
     } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
+      res.status(500).send(`Error fetching data for ${path}: ${error.message}`);
     }
+  });
 });
 
-
-// Route cho sheet "TH_BC"
-app.get("/sheet5", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A95:C101");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet6", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A121:L126");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet7", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A147:L149");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet8", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A169:L171");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet9", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A173:B175");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet10", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A195:L197");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet11", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A219:L221");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet12", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!I223:J227");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet13", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A244:L246");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet14", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A268:L270");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet15", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A295:L297");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet16", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!I272:J275");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet17", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A319:L321");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet18", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!I323:J326");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet19", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A346:L348");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet20", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A370:L372");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet21", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!H373:I380");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet22", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A396:L398");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet23", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A421:L423");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet24", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!H424:I428");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet25", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A485:L488");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet26", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A507:M509");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheet27", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!E534:P536");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet28", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!E539:P541");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet29", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!E544:P546");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet30", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!E549:P551");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet31", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!A576:L579");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet32", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!B591:M593");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheet33", async (req, res) => {
-    try {
-      const data = await getSheetData("charts!B594:M603");
-      res.status(200).json({ data });
-    } catch (error) {
-      res.status(500).send("Error fetching TH_BC data: " + error.message);
-    }
-});
-
-
-// Route cho sheet "TH_BC"
-app.get("/sheeta1", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A447:L349");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-// Route cho sheet "TH_BC"
-app.get("/sheeta2", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!I467:J469");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-
-//route rieeng de lm di bao cao
-// Route cho sheet "TH_BC"
-app.get("/sheetb0", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A2:D3");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb1", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A4:D5");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb2", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A8:D9");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb3", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A12:D13");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb4", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A14:D15");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb5", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A16:D17");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb6", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A18:D19");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb7", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A22:D23");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-
-app.get("/sheetb8", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A34:D35");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb9", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A38:D40");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb10", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A41:D43");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb11", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A44:D49");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb12", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A52:D53");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb13", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A54:D55");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb14", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A58:D59");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb15", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A60:D61");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb16", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A64:D65");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb17", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A66:D67");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb18", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A70:D71");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-}); 
-
-
-//lấy nhận xét 
-
-app.get("/sheetcmt0", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!F3");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-}); 
-
-app.get("/sheetb19", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A72:D73");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb20", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A76:D77");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb21", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A78:D79");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-}); 
-
-app.get("/sheetb22", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A82:D83");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb23", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A84:D85");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb24", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A88:D90");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-}); 
-
-app.get("/sheetb25", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A93:D95");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-});
-
-app.get("/sheetb26", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A98:D100");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-}); 
-
-app.get("/sheetb27", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!A26:B31");
-    res.status(200).json({ data });
-  } catch (error) {
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-}); 
-
-app.get("/sheetb28", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!C26:D31");
-    res.status(200).json({ data });
-  } catch (error) { 
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-
-});   
-
-app.get("/sheetb29", async (req, res) => {
-  try {
-    const data = await getSheetData("charts!E26:F31");
-    res.status(200).json({ data });
-  } catch (error) { 
-    res.status(500).send("Error fetching TH_BC data: " + error.message);
-  }
-
-
-}); 
 
 app.get("/tests", async (req, res) => {
   try {
@@ -711,8 +99,6 @@ app.get("/tests", async (req, res) => {
     res.status(500).send("Error fetching TH_BC data: " + error.message);
   }
 });
-
-
 
 app.get("/full", async (req, res) => {
   try {
@@ -733,9 +119,6 @@ app.get("/full", async (req, res) => {
     res.status(500).send("Error fetching TH_BC data: " + error.message);
   }
 });
-
-
-
 
 app.get("/runPlan", async (req, res) => {
   try {
