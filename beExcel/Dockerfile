@@ -1,11 +1,13 @@
 # Sử dụng Node.js 18
 FROM node:18
 
-# Cài đặt Python, FFmpeg và cập nhật yt-dlp từ source mới nhất
+# Cài đặt Python, FFmpeg và yt-dlp từ nguồn chính thức
 RUN apt-get update && apt-get install -y python3 python3-pip ffmpeg && \
-    rm -rf /usr/bin/yt-dlp && \
     curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
     chmod a+rx /usr/local/bin/yt-dlp
+
+# Kiểm tra xem yt-dlp đã được cài chưa
+RUN yt-dlp --version
 
 # Đặt thư mục làm việc
 WORKDIR /app
