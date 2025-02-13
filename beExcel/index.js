@@ -1,29 +1,37 @@
 const express = require("express");
 const { google } = require("googleapis");
-const cors = require("cors"); // Import thư viện cors
-const ytdl = require("ytdl-core");
-const app = express();
+const cors = require("cors");
+const { exec } = require("child_process");
+const fs = require("fs");
 
+const app = express();
 // Sử dụng middleware cors
-app.use(cors()); // Mặc định cho phép tất cả các origin
+// app.use(cors()); // Mặc định cho phép tất cả các origin
+
+// Cấu hình CORS
+app.use(cors({
+  origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
+  credentials: true
+}));
+
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
-// const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
-// console.log(serviceAccount)
-// const auth = new google.auth.GoogleAuth({
-//   credentials: {
-//     client_email: serviceAccount.client_email,
-//     private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
-//   },
-//   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-// });
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
+console.log(serviceAccount)
+const auth = new google.auth.GoogleAuth({
+  credentials: {
+    client_email: serviceAccount.client_email,
+    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
+  },
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});
 
 
 // Thiết lập cấu hình Google Auth
-const auth = new google.auth.GoogleAuth({
-  keyFile: "credentials.json", // Đường dẫn tới credentials.json
-  scopes: "https://www.googleapis.com/auth/spreadsheets",
-});
+// const auth = new google.auth.GoogleAuth({
+//   keyFile: "credentials.json", // Đường dẫn tới credentials.json
+//   scopes: "https://www.googleapis.com/auth/spreadsheets",
+// });
 
 // ID của Google Sheet
 const spreadsheetId = "1itgkdhtP-De1GQqFT3I4uG3mSXamHs_5M4F9yqpmHjc";
@@ -152,20 +160,63 @@ app.get("/runPlan", async (req, res) => {
 
 
 
-app.get("/download", async (req, res) => {
-  const videoUrl = req.query.url;
-  if (!videoUrl) return res.status(400).send("Missing URL");
+app.get("/download/soundcloud", async (req, res) => {
+  const trackUrl = req.query.url;
+  if (!trackUrl) return res.status(400).json({ error: "Thiếu URL track!" });
 
-  try {
-    const info = await ytdl.getInfo(videoUrl);
-    const format = ytdl.chooseFormat(info.formats, { quality: "highestaudio" });
+  const outputPath = `/tmp/soundcloud.mp3`; // Đổi thành MP3
+  const command = `yt-dlp -f "bestaudio" --extract-audio --audio-format mp3 -o "${outputPath}" "${trackUrl}"`;
 
-    res.header("Content-Disposition", `attachment; filename="audio.mp3"`);
-    ytdl(videoUrl, { format }).pipe(res);
-  } catch (error) {
-    res.status(500).send("Error downloading audio: " + error.message);
-  }
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: "Lỗi tải nhạc từ SoundCloud!", details: stderr });
+    }
+
+    if (!fs.existsSync(outputPath)) {
+      return res.status(500).json({ error: "File không tồn tại sau khi tải!" });
+    }
+
+    res.download(outputPath, "soundcloud.mp3", (err) => {
+      if (err) return res.status(500).json({ error: "Lỗi gửi file!", details: err.message });
+      fs.unlinkSync(outputPath);
+    });
+  });
 });
+
+
+app.get("/download/youtube", async (req, res) => {
+  const videoUrl = req.query.url;
+  if (!videoUrl) return res.status(400).json({ error: "Thiếu URL video!" });
+
+  const userCookies = req.headers["cookie"]; // Lấy cookies từ client
+  if (!userCookies) {
+    return res.status(400).json({ error: "Vui lòng đăng nhập YouTube trên trình duyệt của bạn!" });
+  }
+
+  const outputPath = `/tmp/youtube.mp3`;
+  const command = `yt-dlp --cookies-from-browser chrome \
+      -f "bestaudio" --extract-audio --audio-format mp3 \
+      --no-check-certificate --geo-bypass --force-ipv4 \
+      --limit-rate 100K -o "${outputPath}" "${videoUrl}"`;
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: "Lỗi tải nhạc từ YouTube!", details: stderr });
+    }
+
+    if (!fs.existsSync(outputPath)) {
+      return res.status(500).json({ error: "File không tồn tại sau khi tải!" });
+    }
+
+    res.download(outputPath, "youtube.mp3", (err) => {
+      if (err) return res.status(500).json({ error: "Lỗi gửi file!", details: err.message });
+      fs.unlinkSync(outputPath);
+    });
+  });
+});
+
+
+
 
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
 
