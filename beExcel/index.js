@@ -6,7 +6,14 @@ const fs = require("fs");
 
 const app = express();
 // Sử dụng middleware cors
-app.use(cors()); // Mặc định cho phép tất cả các origin
+// app.use(cors()); // Mặc định cho phép tất cả các origin
+
+// Cấu hình CORS
+app.use(cors({
+  origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
+  credentials: true
+}));
+
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
 const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
@@ -176,6 +183,37 @@ app.get("/download/soundcloud", async (req, res) => {
   });
 });
 
+
+app.get("/download/youtube", async (req, res) => {
+  const videoUrl = req.query.url;
+  if (!videoUrl) return res.status(400).json({ error: "Thiếu URL video!" });
+
+  const userCookies = req.headers["cookie"]; // Lấy cookies từ client
+  if (!userCookies) {
+    return res.status(400).json({ error: "Vui lòng đăng nhập YouTube trên trình duyệt của bạn!" });
+  }
+
+  const outputPath = `/tmp/youtube.mp3`;
+  const command = `yt-dlp --cookies-from-browser chrome \
+      -f "bestaudio" --extract-audio --audio-format mp3 \
+      --no-check-certificate --geo-bypass --force-ipv4 \
+      --limit-rate 100K -o "${outputPath}" "${videoUrl}"`;
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      return res.status(500).json({ error: "Lỗi tải nhạc từ YouTube!", details: stderr });
+    }
+
+    if (!fs.existsSync(outputPath)) {
+      return res.status(500).json({ error: "File không tồn tại sau khi tải!" });
+    }
+
+    res.download(outputPath, "youtube.mp3", (err) => {
+      if (err) return res.status(500).json({ error: "Lỗi gửi file!", details: err.message });
+      fs.unlinkSync(outputPath);
+    });
+  });
+});
 
 
 
