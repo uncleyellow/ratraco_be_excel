@@ -1,24 +1,20 @@
 # Sử dụng Node.js 18
 FROM node:18
 
-# Cài đặt Python, FFmpeg và yt-dlp
-RUN apt-get update && apt-get install -y python3 python3-pip ffmpeg \
-    && pip3 install yt-dlp \
-    && ln -s /usr/local/bin/yt-dlp /usr/bin/yt-dlp \
-    && chmod +x /usr/local/bin/yt-dlp \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+# Cài đặt yt-dlp bằng apt-get thay vì pip3
+RUN apt-get update && apt-get install -y yt-dlp ffmpeg
 
 # Đặt thư mục làm việc
 WORKDIR /app
 
-# Copy source code vào container
-COPY package*.json ./
-RUN npm ci  # Cài đặt dependencies nhanh hơn
-
+# Copy toàn bộ code vào container
 COPY . .
 
-# Mở port 3000
+# Cài đặt dependencies
+RUN npm install
+
+# Expose cổng 3000
 EXPOSE 3000
 
-# Chạy server
-CMD ["node", "server.js"]
+# Chạy ứng dụng
+CMD ["node", "index.js"]

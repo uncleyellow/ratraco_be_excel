@@ -2,7 +2,6 @@ const express = require("express");
 const { google } = require("googleapis");
 const cors = require("cors");
 const { exec } = require("child_process");
-const path = require("path");
 const fs = require("fs");
 
 const app = express();
@@ -154,30 +153,30 @@ app.get("/runPlan", async (req, res) => {
 
 
 
-// ✅ API tải video từ YouTube
-app.get("/download", async (req, res) => {
-  const videoUrl = req.query.url;
-  if (!videoUrl) return res.status(400).json({ error: "Thiếu URL video!" });
+app.get("/download/soundcloud", async (req, res) => {
+  const trackUrl = req.query.url;
+  if (!trackUrl) return res.status(400).json({ error: "Thiếu URL track!" });
 
-  const outputPath = `/tmp/audio.mp3`;
-  const command = `python3 -m yt_dlp -f "bestaudio[ext=m4a]" -o "/tmp/audio.mp3" "${videoUrl}"`;
-
+  const outputPath = `/tmp/soundcloud.mp3`; // Đổi thành MP3
+  const command = `yt-dlp -f "bestaudio" --extract-audio --audio-format mp3 -o "${outputPath}" "${trackUrl}"`;
 
   exec(command, (error, stdout, stderr) => {
     if (error) {
-      return res.status(500).json({ error: "Lỗi tải MP3!", details: stderr });
+      return res.status(500).json({ error: "Lỗi tải nhạc từ SoundCloud!", details: stderr });
     }
 
     if (!fs.existsSync(outputPath)) {
       return res.status(500).json({ error: "File không tồn tại sau khi tải!" });
     }
 
-    res.download(outputPath, "audio.mp3", (err) => {
+    res.download(outputPath, "soundcloud.mp3", (err) => {
       if (err) return res.status(500).json({ error: "Lỗi gửi file!", details: err.message });
-      fs.unlinkSync(outputPath); // Xóa file sau khi tải
+      fs.unlinkSync(outputPath);
     });
   });
 });
+
+
 
 
 
