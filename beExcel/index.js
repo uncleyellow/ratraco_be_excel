@@ -34,10 +34,16 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('updateParticipants', participants.filter(p => p.roomId === roomId));
   });
 
-  // Lắng nghe sự kiện tín hiệu WebRTC (offer/answer)
-  socket.on('signal', (data) => {
-    io.to(data.to).emit('signal', data);
+// Lắng nghe sự kiện tín hiệu WebRTC (offer/answer)
+socket.on('signal', (data) => {
+  // Gửi tín hiệu đến tất cả các participants trong room (trừ người gửi)
+  io.to(data.roomId).emit('signal', {
+    from: socket.id,
+    signal: data.signal
   });
+});
+
+
 
   // Khi người dùng ngắt kết nối
   socket.on('disconnect', () => {
