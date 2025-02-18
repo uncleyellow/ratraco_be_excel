@@ -3,10 +3,49 @@ const { google } = require("googleapis");
 const cors = require("cors");
 const { exec } = require("child_process");
 const fs = require("fs");
+const socketIo = require('socket.io');
+const http = require('http');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIo(server, {
+  cors: { 
+    origin: "*", 
+    methods: ["GET", "POST"]
+  },
+  transports: ["websocket", "polling"]
+});
 // Sử dụng middleware cors
 // app.use(cors()); // Mặc định cho phép tất cả các origin
+
+let participants = []; // Để lưu thông tin người tham gia
+
+// Cung cấp file static (frontend)
+app.use(express.static('public'));
+
+// Khi một người dùng kết nối
+io.on('connection', (socket) => {
+  console.log('A user connected: ', socket.id);
+
+  // Lắng nghe sự kiện khi người tham gia gia nhập phòng
+  socket.on('joinRoom', (roomId, participant) => {
+    socket.join(roomId);
+    participants.push({ id: socket.id, name: participant.name, roomId });
+    io.to(roomId).emit('updateParticipants', participants.filter(p => p.roomId === roomId));
+  });
+
+  // Lắng nghe sự kiện tín hiệu WebRTC (offer/answer)
+  socket.on('signal', (data) => {
+    io.to(data.to).emit('signal', data);
+  });
+
+  // Khi người dùng ngắt kết nối
+  socket.on('disconnect', () => {
+    console.log('A user disconnected: ', socket.id);
+    participants = participants.filter(p => p.id !== socket.id);
+    io.emit('updateParticipants', participants);
+  });
+});
 
 // Cấu hình CORS
 app.use(cors({
@@ -14,24 +53,29 @@ app.use(cors({
   credentials: true
 }));
 
+// Thêm middleware để parse JSON body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const usersRoutes = require("./users");
+app.use("/api/users", usersRoutes);
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
-console.log(serviceAccount)
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: serviceAccount.client_email,
-    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
-  },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
+// const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
+// const auth = new google.auth.GoogleAuth({
+//   credentials: {
+//     client_email: serviceAccount.client_email,
+//     private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
+//   },
+//   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+// });
 
 
 // Thiết lập cấu hình Google Auth
-// const auth = new google.auth.GoogleAuth({
-//   keyFile: "credentials.json", // Đường dẫn tới credentials.json
-//   scopes: "https://www.googleapis.com/auth/spreadsheets",
-// });
+const auth = new google.auth.GoogleAuth({
+  keyFile: "credentials.json", // Đường dẫn tới credentials.json
+  scopes: "https://www.googleapis.com/auth/spreadsheets",
+});
 
 // ID của Google Sheet
 const spreadsheetId = "1itgkdhtP-De1GQqFT3I4uG3mSXamHs_5M4F9yqpmHjc";
@@ -221,6 +265,9 @@ app.get("/download/youtube", async (req, res) => {
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
 
 // Khởi động server
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+// app.listen(PORT, () => {
+//   console.log(`Server is running on http://localhost:${PORT}`);
+// });
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
