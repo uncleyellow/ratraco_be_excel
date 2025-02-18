@@ -8,13 +8,14 @@ const http = require('http');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: { 
-    origin: "*", 
-    methods: ["GET", "POST"]
-  },
-  transports: ["websocket", "polling"]
+const io = require('socket.io')(server, {
+  cors: {
+    origin: ["https://uncleyellow.github.io", "http://localhost:4200"], // Chấp nhận các domain này
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 });
+
 // Sử dụng middleware cors
 // app.use(cors()); // Mặc định cho phép tất cả các origin
 
@@ -24,7 +25,6 @@ let participants = []; // Để lưu thông tin người tham gia
 app.use(express.static('public'));
 
 // Khi một người dùng kết nối
-
 io.on('connection', (socket) => {
   console.log('A user connected: ', socket.id);
   
