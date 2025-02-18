@@ -29,6 +29,12 @@ io.on('connection', (socket) => {
 
   // Lắng nghe sự kiện khi người tham gia gia nhập phòng
   socket.on('joinRoom', (roomId, participant) => {
+    // Khi participant tham gia, tạo peer connection cho họ và nhận stream của họ
+  // Giả sử bạn đã có phương thức `createPeerConnection` để xử lý WebRTC
+  const stream = getStreamForParticipant(participant);  // Lấy stream của participant
+
+  // Gửi stream của participant tới tất cả các client khác trong phòng
+  socket.to(roomId).emit('participantStream', stream, participant);
     socket.join(roomId);
     participants.push({ id: socket.id, name: participant.name, roomId });
     io.to(roomId).emit('updateParticipants', participants.filter(p => p.roomId === roomId));
