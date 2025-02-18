@@ -24,6 +24,7 @@ let participants = []; // Để lưu thông tin người tham gia
 app.use(express.static('public'));
 
 // Khi một người dùng kết nối
+
 io.on('connection', (socket) => {
   console.log('A user connected: ', socket.id);
   
@@ -32,23 +33,31 @@ io.on('connection', (socket) => {
     socket.join(roomId);
     participants.push({ id: socket.id, name: participant.name, roomId });
 
-    // Gửi danh sách participants cập nhật cho tất cả những người tham gia
+    // Gửi danh sách participants cập nhật cho tất cả những người tham gia trong phòng
     io.to(roomId).emit('updateParticipants', participants.filter(p => p.roomId === roomId));
 
-    // Gửi stream của người tham gia đến những người khác trong phòng
+    // Gửi thông báo người tham gia mới vào
+    socket.to(roomId).emit('newParticipant', { id: socket.id, name: participant.name });
+
+    // Lắng nghe khi người tham gia gửi stream
     socket.on('participantStream', (stream) => {
       // Phát lại stream tới các participants khác trong phòng
-      socket.to(roomId).emit('participantStream', stream, participant);
+      socket.to(roomId).emit('participantStream', stream, { id: socket.id, name: participant.name });
     });
   });
 
   // Khi người dùng ngắt kết nối
   socket.on('disconnect', () => {
     console.log('A user disconnected: ', socket.id);
+    
+    // Tìm người tham gia đã rời phòng và xóa họ khỏi danh sách participants
     participants = participants.filter(p => p.id !== socket.id);
+    
+    // Cập nhật danh sách participants cho các người tham gia còn lại
     io.emit('updateParticipants', participants);
   });
 });
+
 
 
 // Cấu hình CORS
