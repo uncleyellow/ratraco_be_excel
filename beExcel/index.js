@@ -27,46 +27,20 @@ app.use(express.static('public'));
 io.on('connection', (socket) => {
   console.log('A user connected: ', socket.id);
   
-// Xử lý offer
-socket.on('offer', (payload) => {
-  io.to(payload.target).emit('offer', {
-    sdp: payload.sdp,
-    from: socket.id
-  });
-});
-
-// Xử lý answer  
-socket.on('answer', (payload) => {
-  io.to(payload.target).emit('answer', {
-    sdp: payload.sdp,
-    from: socket.id
-  });
-});
-
-// Xử lý ice candidate
-socket.on('ice-candidate', (payload) => {
-  io.to(payload.target).emit('ice-candidate', {
-    candidate: payload.candidate,
-    from: socket.id
-  });
-});
-  // Lắng nghe sự kiện khi người tham gia gia nhập phòng
+  // Lắng nghe khi người tham gia gia nhập phòng
   socket.on('joinRoom', (roomId, participant) => {
     socket.join(roomId);
     participants.push({ id: socket.id, name: participant.name, roomId });
+
+    // Gửi danh sách participants cập nhật cho tất cả những người tham gia
     io.to(roomId).emit('updateParticipants', participants.filter(p => p.roomId === roomId));
+
+    // Gửi stream của người tham gia đến những người khác trong phòng
+    socket.on('participantStream', (stream) => {
+      // Phát lại stream tới các participants khác trong phòng
+      socket.to(roomId).emit('participantStream', stream, participant);
+    });
   });
-
-// Lắng nghe sự kiện tín hiệu WebRTC (offer/answer)
-socket.on('signal', (data) => {
-  // Gửi tín hiệu đến tất cả các participants trong room (trừ người gửi)
-  io.to(data.roomId).emit('signal', {
-    from: socket.id,
-    signal: data.signal
-  });
-});
-
-
 
   // Khi người dùng ngắt kết nối
   socket.on('disconnect', () => {
@@ -75,6 +49,7 @@ socket.on('signal', (data) => {
     io.emit('updateParticipants', participants);
   });
 });
+
 
 // Cấu hình CORS
 app.use(cors({
