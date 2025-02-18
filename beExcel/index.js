@@ -26,7 +26,30 @@ app.use(express.static('public'));
 // Khi một người dùng kết nối
 io.on('connection', (socket) => {
   console.log('A user connected: ', socket.id);
+  
+// Xử lý offer
+socket.on('offer', (payload) => {
+  io.to(payload.target).emit('offer', {
+    sdp: payload.sdp,
+    from: socket.id
+  });
+});
 
+// Xử lý answer  
+socket.on('answer', (payload) => {
+  io.to(payload.target).emit('answer', {
+    sdp: payload.sdp,
+    from: socket.id
+  });
+});
+
+// Xử lý ice candidate
+socket.on('ice-candidate', (payload) => {
+  io.to(payload.target).emit('ice-candidate', {
+    candidate: payload.candidate,
+    from: socket.id
+  });
+});
   // Lắng nghe sự kiện khi người tham gia gia nhập phòng
   socket.on('joinRoom', (roomId, participant) => {
     socket.join(roomId);
