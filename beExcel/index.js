@@ -8,64 +8,123 @@ const http = require('http');
 
 const app = express();
 const server = http.createServer(app);
-const io = require('socket.io')(server, {
+
+// Cấu hình Socket.IO với CORS
+const io = socketIo(server, {
   cors: {
-    origin: ["https://uncleyellow.github.io", "http://localhost:4200"], // Chấp nhận các domain này
+    origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
     methods: ["GET", "POST"],
     credentials: true
   }
 });
 
-// Sử dụng middleware cors
-// app.use(cors()); // Mặc định cho phép tất cả các origin
-
-let participants = []; // Để lưu thông tin người tham gia
-
-// Cung cấp file static (frontend)
-app.use(express.static('public'));
-
-// Khi một người dùng kết nối
-io.on('connection', (socket) => {
-  console.log('A user connected: ', socket.id);
-  
-  // Lắng nghe khi người tham gia gia nhập phòng
-  socket.on('joinRoom', (roomId, participant) => {
-    socket.join(roomId);
-    participants.push({ id: socket.id, name: participant.name, roomId });
-
-    // Gửi danh sách participants cập nhật cho tất cả những người tham gia trong phòng
-    io.to(roomId).emit('updateParticipants', participants.filter(p => p.roomId === roomId));
-
-    // Gửi thông báo người tham gia mới vào
-    socket.to(roomId).emit('newParticipant', { id: socket.id, name: participant.name });
-
-    // Lắng nghe khi người tham gia gửi stream
-    socket.on('participantStream', (stream) => {
-      // Phát lại stream tới các participants khác trong phòng
-      socket.to(roomId).emit('participantStream', stream, { id: socket.id, name: participant.name });
-    });
-  });
-
-  // Khi người dùng ngắt kết nối
-  socket.on('disconnect', () => {
-    console.log('A user disconnected: ', socket.id);
-    
-    // Tìm người tham gia đã rời phòng và xóa họ khỏi danh sách participants
-    participants = participants.filter(p => p.id !== socket.id);
-    
-    // Cập nhật danh sách participants cho các người tham gia còn lại
-    io.emit('updateParticipants', participants);
-  });
-});
-
-
-
-// Cấu hình CORS
+// Cấu hình CORS cho Express
 app.use(cors({
   origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
   credentials: true
 }));
 
+// Lưu trữ thông tin về các phòng và người tham gia
+const rooms = new Map();
+
+// Sử dụng middleware cors
+// app.use(cors()); // Mặc định cho phép tất cả các origin
+
+
+// Cung cấp file static (frontend)
+app.use(express.static('public'));
+
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // Xử lý khi người dùng tham gia phòng
+  socket.on('joinRoom', (roomId, participant) => {
+    console.log(`User ${participant.name} joining room ${roomId}`);
+    
+    // Tham gia phòng Socket.IO
+    socket.join(roomId);
+    
+    // Khởi tạo phòng nếu chưa tồn tại
+    if (!rooms.has(roomId)) {
+      rooms.set(roomId, new Map());
+    }
+    
+    // Lưu thông tin người tham gia
+    const room = rooms.get(roomId);
+    room.set(socket.id, {
+      id: participant.id,
+      name: participant.name,
+      socketId: socket.id
+    });
+
+    // Thông báo cho những người khác trong phòng
+    socket.to(roomId).emit('newParticipant', {
+      id: participant.id,
+      name: participant.name
+    });
+
+    // Gửi danh sách người tham gia hiện tại cho người mới
+    const participants = Array.from(room.values());
+    socket.emit('updateParticipants', participants);
+  });
+
+  // Xử lý tín hiệu WebRTC
+  socket.on('signal', (data) => {
+    console.log('Signal received:', data.type, 'for:', data.to);
+    
+    // Tìm socket ID của người nhận
+    let recipientSocketId = data.to;
+    
+    // Chuyển tiếp tín hiệu
+    io.to(recipientSocketId).emit('signal', {
+      ...data,
+      from: socket.id
+    });
+  });
+
+  // Xử lý khi người dùng rời phòng
+  socket.on('leaveRoom', (roomId, participantId) => {
+    handleParticipantLeave(socket, roomId, participantId);
+  });
+
+  // Xử lý khi người dùng ngắt kết nối
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+    
+    // Tìm và xử lý rời phòng cho tất cả các phòng mà người dùng tham gia
+    rooms.forEach((room, roomId) => {
+      if (room.has(socket.id)) {
+        const participant = room.get(socket.id);
+        handleParticipantLeave(socket, roomId, participant.id);
+      }
+    });
+  });
+});
+
+// Hàm xử lý khi người dùng rời phòng
+function handleParticipantLeave(socket, roomId, participantId) {
+  if (rooms.has(roomId)) {
+    const room = rooms.get(roomId);
+    room.delete(socket.id);
+    
+    // Nếu phòng trống, xóa phòng
+    if (room.size === 0) {
+      rooms.delete(roomId);
+    } else {
+      // Thông báo cho những người còn lại
+      socket.to(roomId).emit('participantLeft', participantId);
+      
+      // Cập nhật danh sách người tham gia
+      const participants = Array.from(room.values());
+      io.to(roomId).emit('updateParticipants', participants);
+    }
+  }
+  
+  // Rời phòng Socket.IO
+  socket.leave(roomId);
+}
+
+// Giữ lại các routes hiện có của bạn...
 // Thêm middleware để parse JSON body
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
