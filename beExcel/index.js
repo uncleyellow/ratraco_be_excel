@@ -12,7 +12,8 @@ const server = http.createServer(app);
 // Cấu hình Socket.IO với CORS
 const io = socketIo(server, {
   cors: {
-    origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
+    // origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
+    origin: "*", // Cho phép tất cả các origin trong môi trường development
     methods: ["GET", "POST"],
     credentials: true
   }
@@ -20,7 +21,8 @@ const io = socketIo(server, {
 
 // Cấu hình CORS cho Express
 app.use(cors({
-  origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
+  // origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
+  origin: "*", // Cho phép tất cả các origin trong môi trường development 
   credentials: true
 }));
 
