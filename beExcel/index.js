@@ -70,8 +70,9 @@ io.on('connection', (socket) => {
 
   // Xử lý tín hiệu WebRTC
   socket.on('signal', (data) => {
-    console.log('Signal received:', data.type, 'for:', data.to);
-    
+    console.log(`🚀 Chuyển tiếp signal: ${data.type} từ ${socket.id} đến ${data.to}`);
+    io.to(data.to).emit('signal', { ...data, from: socket.id });
+
     // Tìm socket ID của người nhận
     let recipientSocketId = data.to;
     
@@ -133,21 +134,21 @@ const usersRoutes = require("./users");
 app.use("/api/users", usersRoutes);
 
 // Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
-// const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
-// const auth = new google.auth.GoogleAuth({
-//   credentials: {
-//     client_email: serviceAccount.client_email,
-//     private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
-//   },
-//   scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-// });
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
+const auth = new google.auth.GoogleAuth({
+  credentials: {
+    client_email: serviceAccount.client_email,
+    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
+  },
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+});
 
 
 // Thiết lập cấu hình Google Auth
-const auth = new google.auth.GoogleAuth({
-  keyFile: "credentials.json", // Đường dẫn tới credentials.json
-  scopes: "https://www.googleapis.com/auth/spreadsheets",
-});
+// const auth = new google.auth.GoogleAuth({
+//   keyFile: "credentials.json", // Đường dẫn tới credentials.json
+//   scopes: "https://www.googleapis.com/auth/spreadsheets",
+// });
 
 // ID của Google Sheet
 const spreadsheetId = "1itgkdhtP-De1GQqFT3I4uG3mSXamHs_5M4F9yqpmHjc";
