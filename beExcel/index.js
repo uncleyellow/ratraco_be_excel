@@ -12,7 +12,6 @@ const server = http.createServer(app);
 // Cấu hình Socket.IO với CORS
 const io = socketIo(server, {
   cors: {
-    // origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
     origin: "*", // Cho phép tất cả các origin trong môi trường development
     methods: ["GET", "POST"],
     credentials: true
@@ -21,7 +20,6 @@ const io = socketIo(server, {
 
 // Cấu hình CORS cho Express
 app.use(cors({
-  // origin: ["https://uncleyellow.github.io", "http://localhost:4200"],
   origin: "*", // Cho phép tất cả các origin trong môi trường development 
   credentials: true
 }));
@@ -31,7 +29,6 @@ const rooms = new Map();
 
 // Sử dụng middleware cors
 // app.use(cors()); // Mặc định cho phép tất cả các origin
-
 
 // Cung cấp file static (frontend)
 app.use(express.static('public'));
@@ -135,22 +132,11 @@ app.use(express.urlencoded({ extended: true }));
 const usersRoutes = require("./users");
 app.use("/api/users", usersRoutes);
 
-// Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
-const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
-const auth = new google.auth.GoogleAuth({
-  credentials: {
-    client_email: serviceAccount.client_email,
-    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
-  },
-  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-});
-
-
 // Thiết lập cấu hình Google Auth
-// const auth = new google.auth.GoogleAuth({
-//   keyFile: "credentials.json", // Đường dẫn tới credentials.json
-//   scopes: "https://www.googleapis.com/auth/spreadsheets",
-// });
+const auth = new google.auth.GoogleAuth({
+  keyFile: "credentials.json", // Đường dẫn tới credentials.json
+  scopes: "https://www.googleapis.com/auth/spreadsheets",
+});
 
 // ID của Google Sheet
 const spreadsheetId = "1itgkdhtP-De1GQqFT3I4uG3mSXamHs_5M4F9yqpmHjc";
@@ -200,9 +186,6 @@ const routes = [
   { path: "/sheetb27", range: "charts!A26:B31" },
   { path: "/sheetb28", range: "charts!C26:D31" },
   { path: "/sheetb29", range: "charts!E26:F31" },
-  // { path: "/tests", range: "charts!A26:F29" },
-  // { path: "/full", range: "Tong_hop!A6:H53" },
-  // { path: "/runPlan", range: "KH_Chay_Tau_25!A4:N33" },
   { path: "/sheetcmt0", range: "charts!F3" },
 ];
 
@@ -216,7 +199,6 @@ routes.forEach(({ path, range }) => {
     }
   });
 });
-
 
 app.get("/tests", async (req, res) => {
   try {
@@ -277,8 +259,6 @@ app.get("/runPlan", async (req, res) => {
   }
 });
 
-
-
 app.get("/download/soundcloud", async (req, res) => {
   const trackUrl = req.query.url;
   if (!trackUrl) return res.status(400).json({ error: "Thiếu URL track!" });
@@ -301,7 +281,6 @@ app.get("/download/soundcloud", async (req, res) => {
     });
   });
 });
-
 
 app.get("/download/youtube", async (req, res) => {
   const videoUrl = req.query.url;
@@ -334,15 +313,9 @@ app.get("/download/youtube", async (req, res) => {
   });
 });
 
-
-
-
 const PORT = process.env.PORT || 3000;  // 🚀 Dùng cổng từ Railway hoặc mặc định là 3000
 
 // Khởi động server
-// app.listen(PORT, () => {
-//   console.log(`Server is running on http://localhost:${PORT}`);
-// });
 server.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
