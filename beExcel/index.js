@@ -132,11 +132,23 @@ app.use(express.urlencoded({ extended: true }));
 const usersRoutes = require("./users");
 app.use("/api/users", usersRoutes);
 
-// Thiết lập cấu hình Google Auth
+
+
+// Chuyển GOOGLE_SERVICE_KEY từ JSON string thành Object
+const serviceAccount = JSON.parse(process.env.GOOGLE_SERVICE_KEY);
 const auth = new google.auth.GoogleAuth({
-  keyFile: "credentials.json", // Đường dẫn tới credentials.json
-  scopes: "https://www.googleapis.com/auth/spreadsheets",
+  credentials: {
+    client_email: serviceAccount.client_email,
+    private_key: serviceAccount.private_key.replace(/\\n/g, "\n"),  // Fix lỗi xuống dòng trong Private Key
+  },
+  scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 });
+
+// Thiết lập cấu hình Google Auth
+// const auth = new google.auth.GoogleAuth({
+//   keyFile: "credentials.json", // Đường dẫn tới credentials.json
+//   scopes: "https://www.googleapis.com/auth/spreadsheets",
+// });
 
 // ID của Google Sheet
 const spreadsheetId = "1itgkdhtP-De1GQqFT3I4uG3mSXamHs_5M4F9yqpmHjc";
