@@ -19,16 +19,16 @@ const io = socketIo(server, {
 });
 
 // Cấu hình CORS cho Express
-app.use(cors({
-  origin: "*", // Cho phép tất cả các origin trong môi trường development 
-  credentials: true
-}));
+// app.use(cors({
+//   origin: "*", // Cho phép tất cả các origin trong môi trường development 
+//   credentials: true
+// }));
 
 // Lưu trữ thông tin về các phòng và người tham gia
 const rooms = new Map();
 
 // Sử dụng middleware cors
-// app.use(cors()); // Mặc định cho phép tất cả các origin
+app.use(cors()); // Mặc định cho phép tất cả các origin
 
 // Cung cấp file static (frontend)
 app.use(express.static('public'));
