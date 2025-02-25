@@ -12,9 +12,8 @@ const server = http.createServer(app);
 // Cấu hình Socket.IO với CORS
 const io = socketIo(server, {
   cors: {
-    origin: "*", // Cho phép tất cả các origin trong môi trường development
+    origin: "https://uncleyellow.github.io", // Chỉ định origin cụ thể
     methods: ["GET", "POST"],
-    credentials: true
   }
 });
 
@@ -23,12 +22,14 @@ const io = socketIo(server, {
 //   origin: "*", // Cho phép tất cả các origin trong môi trường development 
 //   credentials: true
 // }));
-
+app.use(cors({
+  origin: "https://uncleyellow.github.io", // Chỉ định origin cụ thể thay vì "*"
+}));
 // Lưu trữ thông tin về các phòng và người tham gia
 const rooms = new Map();
 
 // Sử dụng middleware cors
-app.use(cors()); // Mặc định cho phép tất cả các origin
+// app.use(cors()); // Mặc định cho phép tất cả các origin
 
 // Cung cấp file static (frontend)
 app.use(express.static('public'));
