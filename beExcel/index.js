@@ -23,7 +23,8 @@ const io = socketIo(server, {
 //   credentials: true
 // }));
 app.use(cors({
-  origin: "https://uncleyellow.github.io", // Chỉ định origin cụ thể thay vì "*"
+  origin: "https://uncleyellow.github.io",  // Origin cụ thể
+  credentials: true                        // Cho phép gửi cookies và xác thực
 }));
 // Lưu trữ thông tin về các phòng và người tham gia
 const rooms = new Map();
