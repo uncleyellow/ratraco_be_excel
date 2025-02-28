@@ -1,9 +1,0 @@
-[phases.setup]
-nixPkgs = ["nodejs_18", "npm", "python3", "ffmpeg", "yt-dlp", "bash", "coreutils"]
-cmds = ["nix-channel --update"]
-
-[phases.build]
-cmds = ["npm ci"]
-
-[phases.start]
-cmds = ["npm start"]
