@@ -1,0 +1,5 @@
+[phases.setup]
+nixPkgs = ["python3", "ffmpeg"]
+cmds = [
+    "pip3 install --no-cache-dir --upgrade pip yt-dlp"
+]
