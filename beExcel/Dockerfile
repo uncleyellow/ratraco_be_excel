@@ -8,12 +8,13 @@ RUN apt-get update && apt-get install -y \
     ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
-# Cài đặt yt-dlp qua pip để đảm bảo chạy đúng
+# Cài đặt yt-dlp qua pip
 RUN python3 -m pip install --no-cache-dir --upgrade pip && \
-    python3 -m pip install --no-cache-dir yt-dlp
+    python3 -m pip install --no-cache-dir yt-dlp && \
+    ln -s $(which yt-dlp) /usr/local/bin/yt-dlp
 
 # Kiểm tra yt-dlp đã được cài đặt đúng chưa
-RUN yt-dlp --version
+RUN which yt-dlp && yt-dlp --version
 
 # Đặt thư mục làm việc
 WORKDIR /app
