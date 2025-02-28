@@ -1,12 +1,18 @@
-# Sử dụng Node.js 18
+# Sử dụng Node.js 18 làm base image
 FROM node:18
 
-# Cài đặt Python, FFmpeg và yt-dlp từ nguồn chính thức
-RUN apt-get update && apt-get install -y python3 python3-pip ffmpeg && \
-    curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && \
-    chmod a+rx /usr/local/bin/yt-dlp
+# Cập nhật package list và cài đặt Python, FFmpeg
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-# Kiểm tra xem yt-dlp đã được cài chưa
+# Cài đặt yt-dlp qua pip để đảm bảo chạy đúng
+RUN python3 -m pip install --no-cache-dir --upgrade pip && \
+    python3 -m pip install --no-cache-dir yt-dlp
+
+# Kiểm tra yt-dlp đã được cài đặt đúng chưa
 RUN yt-dlp --version
 
 # Đặt thư mục làm việc
@@ -16,7 +22,7 @@ WORKDIR /app
 COPY . .
 
 # Cài đặt dependencies Node.js
-RUN npm install
+RUN npm install --production
 
 # Expose cổng 3000
 EXPOSE 3000
